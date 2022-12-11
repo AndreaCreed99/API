@@ -1,0 +1,119 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage{ wasysym }
+
+\title{Analisi di Algoritmi}
+\author{Andrea Giacalone}
+\date{December 2022}
+
+\begin{document}
+\maketitle
+E' importante, ai fini della scelta dell'algoritmo, valutare le ipotesi di ordinamento dell'array prima del nostro intervento.
+    \section{Insertion Sort}
+    Seleziono un elemento e lo reinserisco nella porzione di vettore già ordinato, al suo posto; possiamo decidere indifferentemente di partire o da destra o da sinistra. \\
+    E' un tipo di ordinamento \emph{stabile} usando $>$ al posto di $>=$: in questo modo evitiamo di scambiar di posto i doppioni.\\
+\\
+    \textbf{Osservazione}: a[0] lo posso già vedere come un vettore ordinato: alla peggio lo devo spostare, ma non ho bisogno di salvarlo in una cella tmp.\\
+    \\
+
+    \begin{itemize}
+        \item T(n): \begin{itemize}
+            \item caso ottimo: $\theta(n)$, quando il vettore è già ordinato;
+            \item caso pessimo: $\theta(n^2)$, quando è ordinato ma in verso contrario;
+            \item caso generico: $\theta(n^2)$
+        \end{itemize}
+        \item S(n): $\theta(1)$, dal momento che occupiamo solo la celletta tmp, per copiare temporaneamente il valore per essere scambiato.(\emph{il vettore di input non si conta})
+    \end{itemize}
+
+\smiley: \textbf{molto efficiente nella complessità spaziale};\\
+
+\frownie: \textbf{molto lento, nel caso peggiore arriva a toccare complessità quadratica - dovuto al fatto che l'insertion sort esegue ordine dei confronti in maniera non ottimale}.\\
+
+    \section{Merge Sort}
+    Suddivido continuamente a metà il vettore per poi ordinare ciascuna parte sino ad arrivare ai singoli elementi: ordinare un elemento equivale a selezionarlo, quindi successivamente si passa ad ordinare le coppie.\\
+    
+    \begin{itemize}
+        \item T(n): $\theta(n*log(n))$ - direttamente ricavato dal caso 2 del \emph{Master Theorem} e valido in ogni caso, sia pessimo che ottimo.
+        \item S(n): $\theta(n)$ - ottenuto per via della copia delle metà degli array.
+    \end{itemize}
+    \\
+    \emph{Osservazione}: è possibile ottenere una versione stabile del MS modificando l'algoritmo di \emph{Merge()};basta privilegiare eventualmente gli elementi di L rispetto a quelli di R e viceversa.\\
+
+\smiley: \textbf{garanzia nella complessità temporale senza alcuna significativa variazione nei vari casi}.\\
+\smiley: \textbf{netto miglioramento nella complessità temporale rispetto ad algoritmo di Insertion Sort}.\\
+\\
+\frownie: \textbf{netto peggioramento della complessità spaziale rispetto ad algoritmo di Insertion Sort - pena la necessaria copia delle metà di array}.
+
+    \section{Quick Sort}
+    Algoritmo presente nella libreria standard di C: è in grado di ordinare \emph{in place}, ossia senza usare spazio ausiliario come la variabile \emph{tmp} dell'IS o gli \emph{array copia} del MS.\\
+    Si partiziona l'array di partenza in slices: dopodichè il QS applica il \emph{dividi et impera} ad una slice A[lo..hi].\\
+    E'un algoritmo difficile da parallelizzare (a differenza del MS invece).
+    \\
+    \textbf{Dividi}: Sceglie un elemento A[p], detto \textbf{pivot}, come punto di suddivisione dello slice e sposta gli elementi di A[lo..hi] in modo che tutti quelli di A[lo..p-1] siano minori o uguali al pivot.\\
+    \textbf{Impera}: Ordina A[lo..p-1], A[p+1..hi] con Quick Sort.\\
+    \\
+    NB: non ho bisogno di eseguire un ricombinamento dei risultati poichè tutto viene eseguito sul posto.\\
+    \\
+    Esistono due principali meccanismi di partizione:
+        \subsection{Partizione di Lomuto}
+            Il vettore viene suddiviso in 3 porzioni delimitate da 2 indici: i e j, dove :
+            \begin{itemize}
+                \item i: indica la posizione dell'\emph{ultimo elemento minore uguale del pivot}, escluso il pivot stesso;
+                \item j: indica la posizione del \emph{primo elemento maggiore uguale del pivot}, escluso il pivot stesso;
+                \item l' (i+1)-esimo elemento è nella sua posizione definitiva dopo \emph{PARTITIONLOMUTO}, dunque posso escluderlo nelle chiamate ricorsive.
+            \end{itemize}
+            L'algoritmo inoltre ritorna l'indice del pivot.\\
+            \\
+            \textbf{Complessità dell'algoritmo}: $\theta(n)$ (numero di scambi: $n/2$ dovuti allo scatto dell'istruzione \emph{SCAMBIA}(A[i],A[j]));
+            \\
+            \\
+            \textbf{Problema principale dell'algoritmo}: se ho un vettore con tutti cloni, farò n scambi, dunque sarebbe uno spreco.\\
+            \\
+        \subsection{Partizione di Hoare}
+            L'idea principale è quella di comprimere il pivot fra i e j.\\
+            In questo modo si riesce a evitare di effettuare scambi qualora l'array dovesse presentare tutti o comunque più cloni.\\
+            \\
+            \textbf{Complessità dell'algoritmo}: $\theta(n)$ (numero di scambi effettuati: $n/6$, circa un terzo rispetto al numero di scambi della Partizione di Lomuto)\\
+            \\
+            \textbf{Problema principale dell'algoritmo}: restituisce l'indice dell'\emph{ultimo elemento minore uguale del pivot}, non necessariamente uguale al pivot; per questo motivo serve una modifica del \emph{QUICKSORT}.
+        \subsection{Complessità dipendente dalla partizione}
+            Se il calcolo della \emph{PARTITION}, al di là dello specifico meccanismo, ha comunque complessità temporale $\theta(n)$, dove \emph{n} è la lunghezza del vettore di cui deve operare la partizione, quella dell'intero Quicksort risulta:\\
+            \\
+            $T(n) = T(n/a) + T(n - n/a) + \theta(n)$ \\
+            \\
+            dove a indica e dipende da quanto bene è stato partizionato il vettore e, di conseguenza, $n/a$ indica la parte prima del pivot.\\
+            \newpage
+            \begin{itemize}
+                \item \textbf{Caso pessimo}: le due metà sono sbilanciatissime, ossia il vettore è diviso in porzioni lunghe (n - 1) e 1 - in questo modo la ricorrenza diventa:\\
+                \\
+                $T(n) = T(n -1) + T(1) + \theta(n)$ \\
+                \\
+                che ha \textbf{complessità temporale: $\theta(n^2)$};
+                \item \textbf{Caso ottimo}:  il vettore è diviso in due porzioni lunghe $n/2$ - in questo modo la ricorrenza diventa:\\
+                \\
+                $T(n) = T(n/2) + T(n/2) + \theta(n)$ \\
+                \\
+                che ha la \textbf{complessità temporale del Merge Sort}: $\theta(n*log(n/2))$ 
+            \end{itemize}
+        \section{Counting Sort}
+        Fa parte della classe di algoritmi \textbf{non comparativi}: se conosco il dominio degli elementi del vettore ed è piccolo, allor è possibile calcolare l'istogramma delle occorrenze e stampare in ordine i suoi elementi.
+        \emph{Osservazione}: questo per quanta riguarda la sua variante stabile.\\
+        \\
+        \subsection{Variante stabile}
+        Calcoliamo il numero delle occorrenza di ogni elemento come quello classico.\\
+        \\
+        A partire dall'istogramma delle frequenze, lo si trasforma nel vettore contenente il conteggio degli elementi con valori minori uguali di quello dell'indice del vettore.\\
+        \\
+        Una volta fatto, piazza un elemento calcolando la sua posizione come il valore corrente dell'informazione cumulativa contenuta nennl'istogramma.\\
+        \\
+        L'informazione cumulativa è decrementata: effettivamente esiste un elemento in meno, minore uguale delll'indice del vettore.\\
+        \\
+        \textbf{Complessità dell'algoritmo}: $\theta(n + k)$\\
+        \\
+        NB: è importante sottolineare che \emph{k} è il numero degli elementi massimi nel dominio degli elementi.\\
+        
+        
+    
+
+
+\end{document}
